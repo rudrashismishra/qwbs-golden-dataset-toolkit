@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top">
+    <style>
+      body { font-family: Arial, sans-serif; margin: 16px; color: #1f3864; }
+      h3 { margin: 0 0 10px; }
+      .row { margin: 10px 0; }
+      button { background: #1f3864; color: #fff; border: 0; padding: 8px 16px;
+               border-radius: 4px; cursor: pointer; font-size: 13px; }
+      button:disabled { background: #9aa7bd; cursor: default; }
+      #status { margin-top: 12px; font-size: 12px; min-height: 16px; }
+      a { color: #2e5496; }
+    </style>
+  </head>
+  <body>
+    <h3>Upload file for row <?= row ?></h3>
+    <div class="row">
+      <input type="file" id="file" />
+    </div>
+    <div class="row">
+      <button id="go" onclick="doUpload()">Upload &amp; insert link</button>
+    </div>
+    <div id="status"></div>
+
+    <script>
+      var ROW = <?= row ?>;
+
+      function doUpload() {
+        var input = document.getElementById('file');
+        if (!input.files.length) { setStatus('Please choose a file first.'); return; }
+        var file = input.files[0];
+        document.getElementById('go').disabled = true;
+        setStatus('Uploading "' + file.name + '"…');
+
+        var reader = new FileReader();
+        reader.onload = function(e) {
+          var bytes = Array.from(new Uint8Array(e.target.result));
+          google.script.run
+            .withSuccessHandler(function(url) {
+              setStatus('Done. Link inserted: <a href="' + url + '" target="_blank">open file</a>');
+              setTimeout(function(){ google.script.host.close(); }, 1500);
+            })
+            .withFailureHandler(function(err) {
+              document.getElementById('go').disabled = false;
+              setStatus('Error: ' + err.message);
+            })
+            .uploadFile({ bytes: bytes, name: file.name,
+                          mimeType: file.type || 'application/octet-stream', row: ROW });
+        };
+        reader.readAsArrayBuffer(file);
+      }
+
+      function setStatus(html) { document.getElementById('status').innerHTML = html; }
+    </script>
+  </body>
+</html>
