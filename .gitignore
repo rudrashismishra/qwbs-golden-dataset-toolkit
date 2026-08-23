@@ -1,0 +1,16 @@
+# clasp / Apps Script
+.clasp.json
+.clasprc.json
+
+# never commit real data or secrets
+*.xlsx
+*.csv
+secrets*
+*folder-id*
+.env
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
